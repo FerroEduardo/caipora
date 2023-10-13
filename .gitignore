@@ -1,0 +1,11 @@
+/modified-files.txt
+node_modules/
+.vscode/
+
+# /challenges/*/*
+# !/challenges/*/README.md
+# !/challenges/*/.tests/
+
+/.code-runner/src/test.ts
+/.code-runner/dist/
+.env

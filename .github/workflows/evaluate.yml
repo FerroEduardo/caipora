@@ -1,0 +1,80 @@
+name: Evaluate
+on:
+  pull_request:
+    paths:
+      - 'challenges/**'
+      - '!challenges/**/.tests/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  
+jobs:
+  validate:
+    name: Validate Commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: .code-runner/package-lock.json
+
+      - name: Save modified files
+        run: |
+          git diff --name-only HEAD..remotes/origin/${{ github.base_ref }} > modified-files.txt
+      
+      - name: Install packages and compile
+        working-directory: .code-runner
+        run: |
+          npm ci
+          npx tsc
+
+      - name: Validate files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ISSUE_NUMBER: ${{ github.event.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .code-runner/dist/validate.js
+
+  execute:
+    needs: validate
+    name: Execute challenge
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: .code-runner/package-lock.json
+
+      - name: Save modified files
+        run: |
+          git diff --name-only HEAD..remotes/origin/${{ github.base_ref }} > modified-files.txt
+      
+      - name: Install packages and compile
+        working-directory: .code-runner
+        run: |
+          npm ci
+          npx tsc
+
+      - name: Run code
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ISSUE_NUMBER: ${{ github.event.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .code-runner/dist/execute.js

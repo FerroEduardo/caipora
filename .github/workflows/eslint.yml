@@ -1,0 +1,30 @@
+name: eslint
+on:
+  push:
+    branches:    
+      - main
+
+jobs:
+  eslint:
+    name: Validate Commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: .code-runner/package-lock.json
+
+      - name: Install modules
+        working-directory: .code-runner
+        run: |
+          npm ci
+
+      - name: Run eslint
+        working-directory: .code-runner
+        run: |
+          npm run lint:check
