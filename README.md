@@ -95,3 +95,10 @@ Successes: 0
 Failures: 1
 Total: 1
 ```
+
+## Pull Request Examples
+
+- [Executing multiples tests](https://github.com/FerroEduardo/caipora/pull/1)
+- [Sending multiple challenges at once](https://github.com/FerroEduardo/caipora/pull/2)
+- [Success](https://github.com/FerroEduardo/caipora/pull/3)
+- [Failure](https://github.com/FerroEduardo/caipora/pull/4)
