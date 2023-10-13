@@ -14,7 +14,7 @@ async function run (): Promise<void> {
   const codeData = await getChallengeCodeData(modifiedFiles)
   const { compiler } = codeData
   const sourceCode = codeData.getSourceCode()
-  const challenge = getChallengeFromPath(codeData.filePath)
+  const challenge = await getChallengeFromPath(codeData.filePath)
   console.log('Challenge:', challenge)
   console.log('Challenge language:', codeData.language)
   console.log('Compiler:', compiler)

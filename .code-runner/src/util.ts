@@ -3,24 +3,40 @@ import { sendComment, addLabel } from './services/github.js'
 import { type CodeData, type Language, compilers, languages, type Compiler, GenericError } from './types.js'
 
 const challengeRegex = /^challenges\/(?<challenge>[\w-]*)\/(?<username>[^/]*)\/(?<filename>.*)$/
+const GITHUB_ACTOR = process.env.GITHUB_ACTOR
 
-export function getChallengeFromPath (filePath: string): string {
-  const regexResult = challengeRegex.exec(filePath)
-  if (regexResult?.groups === undefined || !Object.hasOwn(regexResult.groups, 'challenge')) {
-    throw new GenericError(`Could not find challenge in path: ${filePath}`)
+async function validateUserChallengeDirectory (username: string): Promise<void> {
+  if (GITHUB_ACTOR === undefined) {
+    throw new GenericError('GITHUB_ACTOR environment variable is missing')
   }
-  const { challenge } = regexResult.groups
+
+  if (GITHUB_ACTOR !== username) {
+    const message = `User challenge directory is different from the pull request actor. Actor: ${GITHUB_ACTOR} - Found: ${username}`
+    await sendComment(message)
+    throw new GenericError(message)
+  }
+}
+
+export async function getChallengeFromPath (filePath: string): Promise<string> {
+  const regexResult = challengeRegex.exec(filePath)
+  if (regexResult?.groups === undefined || !Object.hasOwn(regexResult.groups, 'challenge') || !Object.hasOwn(regexResult.groups, 'username')) {
+    throw new GenericError(`Could not find challenge or username in path: ${filePath}`)
+  }
+  const { challenge, username } = regexResult.groups
+
+  await validateUserChallengeDirectory(username)
 
   return challenge
 }
-async function validateModifiedFiles (modifiedFiles: string[]): Promise<void> {
-  const challenges = new Set()
 
-  modifiedFiles.forEach((filePath) => {
-    const challenge = getChallengeFromPath(filePath)
+async function validateModifiedFiles (modifiedFiles: string[]): Promise<void> {
+  const challenges = new Set<string>()
+
+  for (const filePath of modifiedFiles) {
+    const challenge = await getChallengeFromPath(filePath)
 
     challenges.add(challenge)
-  })
+  }
 
   if (challenges.size > 1) {
     const challengeNames = [...challenges.values()]
