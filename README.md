@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Caipora</h1>
+  <h1>code-runner</h1>
 </div>
 
 This repository serves as a demonstration of the concept of **automating code execution and testing** through the utilization of **pull requests and GitHub Actions**.
